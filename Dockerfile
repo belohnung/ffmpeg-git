@@ -50,9 +50,7 @@ cd /ffmpeg/ffmpeg_sources && \
 git clone https://github.com/sekrit-twc/zimg.git && \
 git clone --branch v1.3.15 https://github.com/Netflix/vmaf.git && \
 git clone --depth 1 https://github.com/xiph/opus.git && \
-git clone --depth 1 https://code.videolan.org/videolan/x264.git && \
 git clone https://github.com/videolan/x265.git && \
-git clone https://github.com/OpenVisualCloud/SVT-HEVC && \
 git clone https://github.com/FFmpeg/FFmpeg ffmpeg && \
 #-------------------
 # Compile z.lib/zimg
@@ -82,20 +80,6 @@ cd /ffmpeg/ffmpeg_sources/opus && \
 --disable-shared && \
 make -j $(nproc) && \
 make install && \
-#-----------------
-# Compile SVT-HEVC
-#-----------------
-cd /ffmpeg/ffmpeg_sources/SVT-HEVC/Build/linux && \
-./build.sh release static install && \
-#-------------
-# Compile x264
-#-------------
-cd /ffmpeg/ffmpeg_sources/x264 && \
-./configure \
---enable-static \
---enable-pic && \
-make -j $(nproc) && \
-make install && \
 #-------------
 # Compile x265
 #-------------
@@ -103,7 +87,8 @@ cd /ffmpeg/ffmpeg_sources/x265/build/linux && \
 cmake -G "Unix Makefiles" \
 -DENABLE_SHARED=OFF \
 -DSTATIC_LINK_CRT=ON \
--DENABLE_CLI=OFF \
+-DENABLE_CLI=ON \
+-DCMAKE_EXE_LINKER_FLAGS="-static" \
 ../../source && \
 sed -i 's/-lgcc_s/-lgcc_eh/g' x265.pc && \
 ./multilib.sh && \
@@ -112,7 +97,6 @@ make install && \
 # Compile ffmpeg
 #---------------
 cd /ffmpeg/ffmpeg_sources/ffmpeg && \
-git apply /ffmpeg/ffmpeg_sources/SVT-HEVC/ffmpeg_plugin/0001*.patch && \
 ./configure \
 --pkg-config-flags="--static" \
 --extra-cflags="-I/usr/local/include -static" \
@@ -130,8 +114,6 @@ git apply /ffmpeg/ffmpeg_sources/SVT-HEVC/ffmpeg_plugin/0001*.patch && \
 --enable-version3 \
 --enable-libzimg \
 --enable-libopus \
---enable-libsvthevc \
---enable-libx264 \
 --enable-libx265 && \
 make -j $(nproc) && \
 make install && \
@@ -149,6 +131,7 @@ COPY --from=build /ffmpeg/ffmpeg_sources/vmaf/model /usr/local/share/model
 
 # Copy the binaries
 COPY --from=build /usr/local/bin/ff* /usr/local/bin/
+COPY --from=build /usr/local/bin/x265 /usr/local/bin/
 
 #---------------------------------------
 # Run ffmpeg when the container launches
