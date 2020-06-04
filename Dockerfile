@@ -11,15 +11,16 @@ ADD . /app
 # Update and install dependencies
 #--------------------------------
 RUN \
-apt-get update && \
+apt update -qq && \
 # Add build packages
-apt-get install -y \
+apt install -y \
 --no-install-recommends \
   autoconf \
   automake \
   build-essential \
   ca-certificates \
   cmake \
+  doxygen \
   libasound2 \
   libass-dev \
   libfreetype6-dev \
@@ -33,12 +34,19 @@ apt-get install -y \
   libxcb1-dev \
   libxcb-shm0-dev \
   libxcb-xfixes0-dev \
+  ninja-build \
   pkg-config \
+  python3 \
+  python3-pip \
+  python3-setuptools \
+  python3-wheel \
   texinfo \
   zlib1g-dev \
   git-core \
   nasm \
   yasm && \
+  # Install meson
+  pip3 install meson && \
 #------------------
 # Setup directories
 #------------------
@@ -48,7 +56,7 @@ mkdir -p /input /output /ffmpeg/ffmpeg_sources && \
 #----------------
 cd /ffmpeg/ffmpeg_sources && \
 git clone https://github.com/sekrit-twc/zimg.git && \
-git clone --branch v1.3.15 https://github.com/Netflix/vmaf.git && \
+git clone --branch master https://github.com/Netflix/vmaf.git && \
 git clone --depth 1 https://github.com/xiph/opus.git && \
 git clone --depth 1 https://code.videolan.org/videolan/x264.git && \
 git clone https://github.com/videolan/x265.git && \
@@ -67,12 +75,12 @@ make install && \
 #----------------
 # Compile libvmaf
 #----------------
-cd /ffmpeg/ffmpeg_sources/vmaf/ptools && \
-make -j $(nproc) && \
-cd ../wrapper && \
-make -j $(nproc) && \
-cd .. && \
-make install && \
+cd /ffmpeg/ffmpeg_sources/vmaf/libvmaf && \
+meson build --default-library=static --buildtype release && \
+ninja -vC build && \
+ninja -vC build install && \
+mkdir -p /usr/local/lib/pkgconfig && \
+cp /usr/local/lib/x86_64-linux-gnu/pkgconfig/libvmaf.pc /usr/local/lib/pkgconfig/ && \
 #----------------
 # Compile libopus
 #----------------
