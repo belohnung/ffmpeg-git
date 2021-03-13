@@ -108,24 +108,51 @@ git apply /ffmpeg/ffmpeg_sources/SVT-HEVC/ffmpeg_plugin/0001*.patch
 # apply libsvtvp9 patch
 git apply /ffmpeg/ffmpeg_sources/SVT-VP9/ffmpeg_plugin/master-0001-Add-ability-for-ffmpeg-to-run-svt-vp9.patch
 ./configure \
-  --disable-static \
-  --enable-shared \
   --disable-debug \
-  --disable-doc \
-  --disable-ffplay \
-  --enable-ffprobe \
-  --enable-gpl \
-  --enable-libfreetype \
-  --enable-version3 \
-  --enable-libvmaf \
-  --enable-libzimg \
-  --enable-libopus \
-  --enable-libx264 \
-  --enable-libx265 \
-  --enable-libsvthevc \
-  --enable-libsvtvp9 \
-  --enable-libsvtav1 \
-  --enable-libaom
+    --disable-static \
+    --disable-stripping \
+    --enable-amf \
+    --enable-avisynth \
+    --enable-cuda-llvm \
+    --enable-lto \
+    --enable-fontconfig \
+    --enable-gmp \
+    --enable-gnutls \
+    --enable-gpl \
+    --enable-ladspa \
+    --enable-libaom \
+    --enable-libass \
+    --enable-libbluray \
+    --enable-libdav1d \
+    --enable-libdrm \
+    --enable-libfreetype \
+    --enable-libfribidi \
+    --enable-libgsm \
+    --enable-libiec61883 \
+    --enable-libjack \
+    --enable-libmfx \
+    --enable-libmodplug \
+    --enable-libmp3lame \
+    --enable-libopencore_amrnb \
+    --enable-libopencore_amrwb \
+    --enable-libopus \
+    --enable-libpulse \
+    --enable-librav1e \
+    --enable-libsoxr \
+    --enable-libspeex \
+    --enable-libsrt \
+    --enable-libssh \
+    --enable-libvidstab \
+    --enable-libvmaf \
+    --enable-libvorbis \
+    --enable-libvpx \
+    --enable-libwebp \
+    --enable-libx264 \
+    --enable-libx265 \
+    --enable-libxcb \
+    --enable-libxml2 \
+    --enable-libxvid \
+    
 make -j "$(nproc)"
 make install
 hash -r
