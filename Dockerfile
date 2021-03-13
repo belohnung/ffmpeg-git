@@ -20,9 +20,6 @@ FROM docker.io/debian:stable-slim AS build
 # Set the working directory to /app
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
-COPY . /app
-
 #--------------------------------
 # Update and install dependencies
 #--------------------------------
@@ -34,68 +31,66 @@ apt-get update && \
 apt-get install -y \
   --no-install-recommends \
   autoconf \
+  curl \
   automake \
   build-essential \
   ca-certificates \
+  openssl \
+  gnutls-bin \
+  libssl-dev \
   cmake \
   doxygen \
   libasound2 \
-  libass-dev \
-  libfreetype6-dev \
   libnuma-dev \
   libtool-bin \
   libsdl2-dev \
   libtool \
-  libva-dev \
-  libvdpau-dev \
-  libvorbis-dev \
-  libxcb1-dev \
-  libxcb-shm0-dev \
-  libxcb-xfixes0-dev \
-  ninja-build \
   pkg-config \
-  python3 \
-  python3-pip \
-  python3-setuptools \
-  python3-wheel \
   texinfo \
   zlib1g-dev \
   git-core \
   nasm \
-  yasm && \
+  yasm
 #--------------
-# Install meson
+# Install rust
 #--------------
-pip3 install --no-cache-dir meson==0.57.1 && \
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs/ > rustup.sh && chmod +x rustup.sh && ./rustup.sh -y --no-modify-path --profile minimal --default-toolchain stable && rm rustup.sh
 #------------------
 # Setup directories
 #------------------
-mkdir -p /input /output /ffmpeg/ffmpeg_sources && \
+RUN mkdir -p /input /output /ffmpeg/ffmpeg_sources
 #-------------
 # Build ffmpeg
 #-------------
-./build-ffmpeg.sh && \
+
+# Clone sources
+RUN cd /ffmpeg/ffmpeg_sources || exit && git clone --depth 1 https://github.com/xiph/opus.git && git clone https://github.com/FFmpeg/FFmpeg ffmpeg
+
+#----------------
+# Compile libopus
+#----------------
+RUN cd /ffmpeg/ffmpeg_sources/opus || exit && ./autogen.sh && ./configure && make -j "$(nproc)" && make install
+
+# Copy the current directory contents into the container at /app
+COPY . /app
+RUN ./build-lame.sh
+RUN ./build-ffmpeg.sh
+
 #----------------------------------------------------
 # Clean up directories and packages after compilation
 #----------------------------------------------------
-pip3 uninstall meson -y && \
-apt-get purge -y \
+RUN pip3 uninstall meson -y
+RUN apt-get purge -y \
   autoconf \
   automake \
   build-essential \
-  ca-certificates \
   cmake \
   doxygen \
-  ninja-build \
   pkg-config \
-  python3-pip \
-  python3-setuptools \
-  python3-wheel \
   texinfo \
-  git-core \
-  nasm \
-  yasm && \
-apt-get autoremove -y && \
+  git-core
+
+RUN apt-get autoremove -y && \
 apt-get install -y \
   --no-install-recommends \
   libsdl2-dev && \
@@ -103,6 +98,9 @@ apt-get clean && \
 apt-get autoclean && \
 rm -rf /var/lib/apt/lists/* && \
 rm -rf /ffmpeg
+
+
+
 #---------------------------------------
 # Run ffmpeg when the container launches
 #---------------------------------------
