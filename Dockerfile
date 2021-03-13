@@ -79,7 +79,6 @@ RUN ./build-ffmpeg.sh
 #----------------------------------------------------
 # Clean up directories and packages after compilation
 #----------------------------------------------------
-RUN pip3 uninstall meson -y
 RUN apt-get purge -y \
   autoconf \
   automake \

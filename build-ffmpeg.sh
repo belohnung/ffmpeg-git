@@ -14,7 +14,12 @@ cd /ffmpeg/ffmpeg_sources/ffmpeg || exit
     --enable-gpl \
     --enable-nonfree \
     --enable-libmp3lame \
-    --enable-libopus
+    --enable-libopus \
+    --disable-doc \
+    --disable-nvenc \
+    --disable-swscale \
+    --disable-xvmc \
+    --disable-ffplay
     
 make -j "$(nproc)"
 make install
